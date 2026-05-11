@@ -3,12 +3,15 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/quickchat
-    username: admin
-    password: admin
+    url: jdbc:postgresql://ep-red-band-aq70gk90-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require
+    username: neondb_owner
+    password: npg_BJgP61kVXNDr
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-
-    show-sql: true
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
