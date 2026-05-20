@@ -19,6 +19,7 @@ public class MessageRestController {
 
     @GetMapping("/api/messages/{roomId}")
     public List<Message> getMessages(@PathVariable String roomId) {
+
         return messageRepository.findByRoomId(roomId);
     }
 
