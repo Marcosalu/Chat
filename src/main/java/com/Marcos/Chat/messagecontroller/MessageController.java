@@ -1,14 +1,18 @@
 package com.Marcos.Chat.messagecontroller;
 
 import com.Marcos.Chat.entity.Message;
+import com.Marcos.Chat.message.ChatMessage;
 import com.Marcos.Chat.repository.MessageRepository;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.stereotype.Controller;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 
-import java.util.List;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
-@RestController
+@Controller
 public class MessageController {
 
     private final MessageRepository messageRepository;
@@ -17,8 +21,31 @@ public class MessageController {
         this.messageRepository = messageRepository;
     }
 
-    @GetMapping("/messages")
-    public List<Message> getMessages() {
-        return messageRepository.findAll();
+    @MessageMapping("/send")
+    @SendTo("/topic/messages")
+    public ChatMessage sendMessage(
+            ChatMessage chatMessage,
+            SimpMessageHeaderAccessor headerAccessor
+    ) {
+
+        String time = LocalTime.now()
+                .format(DateTimeFormatter.ofPattern("HH:mm"));
+
+        String ip = (String) headerAccessor.getSessionAttributes().get("ip");
+
+        Message message = new Message(
+                chatMessage.getSender(),
+                chatMessage.getContent(),
+                time,
+                ip
+        );
+
+        messageRepository.save(message);
+
+        return new ChatMessage(
+                chatMessage.getSender(),
+                chatMessage.getContent(),
+                time
+        );
     }
 }
