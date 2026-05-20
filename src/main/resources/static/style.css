@@ -1,29 +1,51 @@
 body {
+    margin: 0;
     font-family: Arial, sans-serif;
+    background: #36393f;
+    color: white;
     display: flex;
     height: 100vh;
-    margin: 0;
 }
 
 /* SIDEBAR */
 #sidebar {
-    width: 200px;
-    background: #2c2f33;
-    color: white;
-    padding: 10px;
+    width: 260px;
+    background: #2f3136;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
 }
 
-/* SALAS */
+#sidebar h2 {
+    font-size: 14px;
+    color: #b9bbbe;
+    margin-bottom: 10px;
+}
+
+/* CANALES */
 .room {
-    cursor: pointer;
-    padding: 8px;
+    padding: 10px;
     margin: 5px 0;
-    background: #40444b;
-    border-radius: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    color: #b9bbbe;
 }
 
 .room:hover {
-    background: #5865f2;
+    background: #40444b;
+    color: white;
+}
+
+/* CANAL ACTIVO (DISCORD STYLE) */
+.room.active {
+    background: #3b3f45;
+    color: white;
+    border-left: 3px solid #5865f2;
+}
+
+.room.active:hover {
+    background: #3b3f45;
 }
 
 /* CHAT */
@@ -33,27 +55,63 @@ body {
     flex-direction: column;
 }
 
+/* TOPBAR */
+#topbar {
+    padding: 10px;
+    background: #2f3136;
+    font-size: 14px;
+    color: #b9bbbe;
+}
+
 /* MENSAJES */
 #messages {
     flex: 1;
-    overflow-y: auto;
-    padding: 10px;
     list-style: none;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+#messages li {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #40444b;
+    border-radius: 8px;
+    max-width: 70%;
+}
+
+/* HORA */
+.time {
+    font-size: 11px;
+    color: #b9bbbe;
+    margin-top: 5px;
 }
 
 /* INPUT */
 #inputBox {
     display: flex;
+    padding: 15px;
+    background: #40444b;
+}
+
+#inputBox input {
+    flex: 1;
     padding: 10px;
-    border-top: 1px solid #ccc;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #2f3136;
+    color: white;
 }
 
-input {
-    margin-right: 5px;
-    padding: 6px;
-}
-
-button {
-    padding: 6px 12px;
+#inputBox button {
+    background: #5865f2;
+    border: none;
+    padding: 10px 15px;
+    color: white;
+    border-radius: 5px;
     cursor: pointer;
+}
+
+#inputBox button:hover {
+    background: #4752c4;
 }
