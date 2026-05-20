@@ -1,57 +1,51 @@
 package com.Marcos.Chat.controller;
 
-import com.Marcos.Chat.entity.Message;
-import com.Marcos.Chat.message.ChatMessage;
-import com.Marcos.Chat.repository.MessageRepository;
-
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.stereotype.Controller;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-
-@Controller
 public class ChatController {
 
-    private final MessageRepository messageRepository;
+    private String sender;
+    private String content;
+    private String roomId;
 
-    public ChatController(MessageRepository messageRepository) {
-        this.messageRepository = messageRepository;
+    // 🔥 Constructor vacío (OBLIGATORIO para WebSocket)
+    public ChatController() {
     }
 
-    @MessageMapping("/chat/{roomId}")
-    @SendTo("/topic/room/{roomId}")
-    public ChatMessage sendMessage(
-            @DestinationVariable String roomId,
-            ChatMessage chatMessage,
-            SimpMessageHeaderAccessor headerAccessor
-    ) {
+    // 🔥 Constructor completo
+    public ChatController(String sender, String content, String roomId) {
+        this.sender = sender;
+        this.content = content;
+        this.roomId = roomId;
+    }
 
-        String time = LocalTime.now()
-                .format(DateTimeFormatter.ofPattern("HH:mm"));
+    // =========================
+    // GETTERS
+    // =========================
 
-        String ip = headerAccessor.getSessionAttributes() != null
-                ? (String) headerAccessor.getSessionAttributes().get("ip")
-                : "unknown";
+    public String getSender() {
+        return sender;
+    }
 
-        Message message = new Message(
-                chatMessage.getSender(),
-                chatMessage.getContent(),
-                time,
-                ip,
-                roomId
-        );
+    public String getContent() {
+        return content;
+    }
 
-        messageRepository.save(message);
+    public String getRoomId() {
+        return roomId;
+    }
 
-        return new ChatMessage(
-                chatMessage.getSender(),
-                chatMessage.getContent(),
-                time,
-                roomId
-        );
+    // =========================
+    // SETTERS
+    // =========================
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
     }
 }

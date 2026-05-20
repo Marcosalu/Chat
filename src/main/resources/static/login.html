@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="login-container">
+
+  <div class="login-box">
+
+    <h2>Login</h2>
+
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+    <button onclick="register()">Register</button>
+
+  </div>
+
+</div>
+
+<script>
+
+  async function login() {
+
+      const res = await fetch("/auth/login", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({
+              email: email.value,
+              password: password.value
+          })
+      });
+
+      const result = await res.text();
+
+      if (result === "OK") {
+          localStorage.setItem("userEmail", email.value);
+          window.location.href = "/index.html";
+      } else {
+          alert("Login incorrecto");
+      }
+  }
+
+  async function register() {
+
+      await fetch("/auth/register", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({
+              email: email.value,
+              password: password.value
+          })
+      });
+
+      alert("Usuario creado");
+  }
+
+</script>
+
+</body>
+</html>

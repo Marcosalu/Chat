@@ -3,33 +3,78 @@ body {
     font-family: Arial, sans-serif;
     background: #36393f;
     color: white;
-    display: flex;
-    height: 100vh;
 }
 
-/* SIDEBAR */
+/* =========================
+   LOGIN
+========================= */
+
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    background: #2f3136;
+    padding: 30px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+}
+
+.login-box input {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #40444b;
+    color: white;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #5865f2;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.login-box button:hover {
+    background: #4752c4;
+}
+
+/* =========================
+   CHAT LAYOUT
+========================= */
+
 #sidebar {
     width: 260px;
     background: #2f3136;
     padding: 15px;
     display: flex;
     flex-direction: column;
+    height: 100vh;
+    float: left;
 }
 
 #sidebar h2 {
     font-size: 14px;
     color: #b9bbbe;
-    margin-bottom: 10px;
 }
 
-/* CANALES */
 .room {
     padding: 10px;
     margin: 5px 0;
     border-radius: 6px;
     cursor: pointer;
-    transition: 0.2s;
     color: #b9bbbe;
+    transition: 0.2s;
 }
 
 .room:hover {
@@ -37,33 +82,25 @@ body {
     color: white;
 }
 
-/* CANAL ACTIVO (DISCORD STYLE) */
 .room.active {
     background: #3b3f45;
-    color: white;
     border-left: 3px solid #5865f2;
+    color: white;
 }
 
-.room.active:hover {
-    background: #3b3f45;
-}
-
-/* CHAT */
 #chat {
-    flex: 1;
+    margin-left: 260px;
     display: flex;
     flex-direction: column;
+    height: 100vh;
 }
 
-/* TOPBAR */
 #topbar {
     padding: 10px;
     background: #2f3136;
-    font-size: 14px;
     color: #b9bbbe;
 }
 
-/* MENSAJES */
 #messages {
     flex: 1;
     list-style: none;
@@ -72,21 +109,13 @@ body {
 }
 
 #messages li {
-    margin-bottom: 12px;
-    padding: 10px 12px;
     background: #40444b;
+    margin-bottom: 10px;
+    padding: 10px;
     border-radius: 8px;
-    max-width: 70%;
+    max-width: 60%;
 }
 
-/* HORA */
-.time {
-    font-size: 11px;
-    color: #b9bbbe;
-    margin-top: 5px;
-}
-
-/* INPUT */
 #inputBox {
     display: flex;
     padding: 15px;
@@ -96,7 +125,6 @@ body {
 #inputBox input {
     flex: 1;
     padding: 10px;
-    margin-right: 10px;
     border: none;
     border-radius: 5px;
     background: #2f3136;
@@ -104,9 +132,10 @@ body {
 }
 
 #inputBox button {
+    margin-left: 10px;
+    padding: 10px 15px;
     background: #5865f2;
     border: none;
-    padding: 10px 15px;
     color: white;
     border-radius: 5px;
     cursor: pointer;

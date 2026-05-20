@@ -25,16 +25,15 @@
 <div id="chat">
 
     <div id="topbar">
-        Sala activa: <span id="currentRoom">general</span>
+        Usuario: <span id="user"></span> |
+        Sala: <span id="currentRoom">general</span>
     </div>
 
     <ul id="messages"></ul>
 
     <div id="inputBox">
 
-        <input type="text" id="sender" placeholder="Nombre">
         <input type="text" id="message" placeholder="Escribe un mensaje...">
-
         <button onclick="sendMessage()">Enviar</button>
 
     </div>
@@ -47,7 +46,11 @@
     let currentRoom = "general";
     let currentSubscription = null;
 
-    // 🔌 CONNECT
+    const userEmail = localStorage.getItem("userEmail");
+
+    document.getElementById("user").innerText = userEmail;
+
+    // CONNECT
     function connect() {
 
         const socket = new SockJS('/ws');
@@ -58,7 +61,7 @@
         });
     }
 
-    // 🎯 ACTUALIZA CANAL ACTIVO
+    // ACTIVE ROOM UI
     function updateActiveRoom(room) {
 
         const rooms = document.querySelectorAll(".room");
@@ -69,12 +72,10 @@
             r.textContent.includes(room)
         );
 
-        if (active) {
-            active.classList.add("active");
-        }
+        if (active) active.classList.add("active");
     }
 
-    // 🚪 JOIN ROOM
+    // JOIN ROOM
     function joinRoom(room) {
 
         currentRoom = room;
@@ -90,50 +91,30 @@
         document.getElementById("messages").innerHTML = "";
 
         currentSubscription = stompClient.subscribe(
-            "/topic/room/" + room,
+            "/topic/messages",
             function (msg) {
                 showMessage(JSON.parse(msg.body));
             }
         );
-
-        loadMessages(room);
     }
 
-    // 📥 HISTORIAL
-    async function loadMessages(room) {
-
-        const res = await fetch("/api/messages/" + room);
-        const messages = await res.json();
-
-        const box = document.getElementById("messages");
-
-        box.innerHTML = "";
-
-        messages.forEach(m => showMessage(m));
-    }
-
-    // 📤 ENVIAR
+    // SEND
     function sendMessage() {
 
-        const sender = document.getElementById("sender").value;
         const content = document.getElementById("message").value;
 
         if (!content.trim()) return;
 
-        stompClient.send(
-            "/app/chat/" + currentRoom,
-            {},
-            JSON.stringify({
-                sender,
-                content,
-                roomId: currentRoom
-            })
-        );
+        stompClient.send("/app/send", {}, JSON.stringify({
+            sender: userEmail,
+            content: content,
+            roomId: currentRoom
+        }));
 
         document.getElementById("message").value = "";
     }
 
-    // 💬 MOSTRAR MENSAJE
+    // SHOW
     function showMessage(message) {
 
         const box = document.getElementById("messages");
@@ -142,15 +123,13 @@
 
         li.innerHTML =
             "<strong>" + message.sender + "</strong><br>" +
-            message.content +
-            "<div class='time'>" + message.timestamp + "</div>";
+            message.content;
 
         box.appendChild(li);
 
         box.scrollTop = box.scrollHeight;
     }
 
-    // 🚀 START
     connect();
 
 </script>
