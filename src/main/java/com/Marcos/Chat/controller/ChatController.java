@@ -33,7 +33,9 @@ public class ChatController {
         String time = LocalTime.now()
                 .format(DateTimeFormatter.ofPattern("HH:mm"));
 
-        String ip = (String) headerAccessor.getSessionAttributes().get("ip");
+        String ip = headerAccessor.getSessionAttributes() != null
+                ? (String) headerAccessor.getSessionAttributes().get("ip")
+                : "unknown";
 
         Message message = new Message(
                 chatMessage.getSender(),

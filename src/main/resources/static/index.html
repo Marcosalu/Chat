@@ -12,22 +12,50 @@
 
 <body>
 
+<!-- SIDEBAR -->
 <div id="sidebar">
-    <h3>Salas</h3>
 
-    <div class="room" onclick="joinRoom('general')"># general</div>
-    <div class="room" onclick="joinRoom('gaming')"># gaming</div>
-    <div class="room" onclick="joinRoom('dev')"># dev</div>
+    <h2>Salas</h2>
+
+    <div class="room" onclick="joinRoom('general')">
+        # general
+    </div>
+
+    <div class="room" onclick="joinRoom('gaming')">
+        # gaming
+    </div>
+
+    <div class="room" onclick="joinRoom('dev')">
+        # dev
+    </div>
+
 </div>
 
+<!-- CHAT -->
 <div id="chat">
 
+    <!-- MENSAJES -->
     <ul id="messages"></ul>
 
+    <!-- INPUT -->
     <div id="inputBox">
-        <input id="sender" placeholder="Nombre">
-        <input id="message" placeholder="Mensaje">
-        <button onclick="sendMessage()">Enviar</button>
+
+        <input
+                type="text"
+                id="sender"
+                placeholder="Tu nombre"
+        >
+
+        <input
+                type="text"
+                id="message"
+                placeholder="Escribe un mensaje..."
+        >
+
+        <button onclick="sendMessage()">
+            Enviar
+        </button>
+
     </div>
 
 </div>
@@ -35,57 +63,104 @@
 <script>
 
     let stompClient = null;
+
     let currentRoom = "general";
 
+    let currentSubscription = null;
+
+    // 🔌 CONECTAR WEBSOCKET
     function connect() {
 
         const socket = new SockJS('/ws');
+
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function () {
-            subscribeToRoom(currentRoom);
+
+            console.log("Conectado al WebSocket");
+
+            joinRoom(currentRoom);
+
         });
     }
 
+    // 🚪 CAMBIAR DE SALA
     function joinRoom(room) {
 
         currentRoom = room;
 
+        // limpiar mensajes visuales
         document.getElementById("messages").innerHTML = "";
 
-        subscribeToRoom(room);
+        // cancelar suscripción anterior
+        if (currentSubscription !== null) {
 
+            currentSubscription.unsubscribe();
+        }
+
+        // suscribirse SOLO a la sala actual
+        currentSubscription = stompClient.subscribe(
+            "/topic/room/" + room,
+
+            function (messageOutput) {
+
+                const message = JSON.parse(messageOutput.body);
+
+                showMessage(message);
+            }
+        );
+
+        // cargar historial SOLO de esta sala
         loadMessages(room);
     }
 
-    function subscribeToRoom(room) {
-
-        stompClient.subscribe("/topic/room/" + room, function (msg) {
-            const message = JSON.parse(msg.body);
-            showMessage(message);
-        });
-    }
-
+    // 📥 CARGAR HISTORIAL
     async function loadMessages(room) {
 
         const response = await fetch("/api/messages/" + room);
+
         const messages = await response.json();
 
-        messages.forEach(m => showMessage(m));
+        // limpiar por seguridad
+        document.getElementById("messages").innerHTML = "";
+
+        messages.forEach(msg => {
+
+            showMessage(msg);
+        });
     }
 
+    // 📤 ENVIAR MENSAJE
     function sendMessage() {
 
         const sender = document.getElementById("sender").value;
+
         const content = document.getElementById("message").value;
 
-        stompClient.send("/app/chat/" + currentRoom, {}, JSON.stringify({
-            sender: sender,
-            content: content,
-            roomId: currentRoom
-        }));
+        // evitar mensajes vacíos
+        if (content.trim() === "") {
+            return;
+        }
+
+        stompClient.send(
+
+            "/app/chat/" + currentRoom,
+
+            {},
+
+            JSON.stringify({
+
+                sender: sender,
+                content: content,
+                roomId: currentRoom
+            })
+        );
+
+        // limpiar input
+        document.getElementById("message").value = "";
     }
 
+    // 💬 MOSTRAR MENSAJE
     function showMessage(message) {
 
         const messages = document.getElementById("messages");
@@ -93,17 +168,25 @@
         const li = document.createElement("li");
 
         li.innerHTML =
+
             "<strong>" + message.sender + "</strong> " +
-            "<span style='color:gray; font-size:12px;'>[" + message.timestamp + "]</span><br>" +
+
+            "<span style='color:gray; font-size:12px;'>["
+
+            + message.timestamp +
+
+            "]</span><br>" +
+
             message.content;
 
         messages.appendChild(li);
 
+        // scroll abajo automático
         messages.scrollTop = messages.scrollHeight;
     }
 
+    // 🚀 INICIAR APP
     connect();
-    loadMessages(currentRoom);
 
 </script>
 
