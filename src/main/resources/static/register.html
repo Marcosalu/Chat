@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <title>Register</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,16 +12,16 @@
 
   <div class="login-box">
 
-    <h2>Sign In</h2>
+    <h2>Create Account</h2>
 
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Password">
 
-    <button onclick="login()">Login</button>
+    <button onclick="register()">Register</button>
 
     <p>
-      ¿No tienes cuenta?
-      <a href="/register.html">Register</a>
+      ¿Ya tienes cuenta?
+      <a href="/login.html">Login</a>
     </p>
 
   </div>
@@ -30,9 +30,9 @@
 
 <script>
 
-  async function login() {
+  async function register() {
 
-      const res = await fetch("/auth/login", {
+      const res = await fetch("/auth/register", {
           method: "POST",
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify({
@@ -44,10 +44,10 @@
       const result = await res.text();
 
       if (result === "OK") {
-          localStorage.setItem("userEmail", email.value);
-          window.location.href = "/index.html";
+          alert("Usuario creado");
+          window.location.href = "/login.html";
       } else {
-          alert("Login incorrecto");
+          alert("Error o usuario existente");
       }
   }
 
