@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin("*")
+@CrossOrigin
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -17,27 +17,23 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/register")
-    public String register(@RequestBody User user) {
+    @PostMapping("/register-or-login")
+    public String registerOrLogin(@RequestBody User user) {
 
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return "EXISTS";
-        }
+        Optional<User> existing = userRepository.findByEmail(user.getEmail());
 
-        userRepository.save(user);
-        return "OK";
-    }
-
-    @PostMapping("/login")
-    public String login(@RequestBody User user) {
-
-        Optional<User> found = userRepository.findByEmail(user.getEmail());
-
-        if (found.isPresent() &&
-                found.get().getPassword().equals(user.getPassword())) {
+        // 👉 LOGIN
+        if (existing.isPresent()) {
             return "OK";
         }
 
-        return "ERROR";
+        // 👉 REGISTER
+        User newUser = new User();
+        newUser.setEmail(user.getEmail());
+        newUser.setPassword(user.getPassword());
+
+        userRepository.save(newUser);
+
+        return "OK";
     }
 }

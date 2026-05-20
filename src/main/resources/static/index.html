@@ -48,7 +48,9 @@
 
     const userEmail = localStorage.getItem("userEmail");
 
-    document.getElementById("user").innerText = userEmail;
+if (!userEmail) {
+    window.location.href = "/register.html";
+}
 
     // CONNECT
     function connect() {

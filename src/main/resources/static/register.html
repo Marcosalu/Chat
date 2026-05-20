@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Register</title>
+  <title>Enter Chat</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,17 +12,12 @@
 
   <div class="login-box">
 
-    <h2>Create Account</h2>
+    <h2>Enter Chat</h2>
 
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Password">
 
-    <button onclick="register()">Register</button>
-
-    <p>
-      ¿Ya tienes cuenta?
-      <a href="/login.html">Login</a>
-    </p>
+    <button onclick="enter()">Enter</button>
 
   </div>
 
@@ -30,9 +25,9 @@
 
 <script>
 
-  async function register() {
+  async function enter() {
 
-      const res = await fetch("/auth/register", {
+      const res = await fetch("/auth/register-or-login", {
           method: "POST",
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify({
@@ -44,10 +39,10 @@
       const result = await res.text();
 
       if (result === "OK") {
-          alert("Usuario creado");
-          window.location.href = "/login.html";
+          localStorage.setItem("userEmail", email.value);
+          window.location.href = "/index.html";
       } else {
-          alert("Error o usuario existente");
+          alert("Error");
       }
   }
 
