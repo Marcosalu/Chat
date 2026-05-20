@@ -27,6 +27,28 @@
 
 <script>
 
+  async function register() {
+
+    const res = await fetch("/auth/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            email: email.value,
+            password: password.value
+        })
+    });
+
+    const result = await res.text();
+
+    if (result === "OK") {
+        alert("Usuario creado correctamente");
+    } else if (result === "EXISTS") {
+        alert("Ese usuario ya existe");
+    } else {
+        alert("Error al registrar");
+    }
+}
+
   async function login() {
 
       const res = await fetch("/auth/login", {
@@ -48,19 +70,7 @@
       }
   }
 
-  async function register() {
 
-      await fetch("/auth/register", {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({
-              email: email.value,
-              password: password.value
-          })
-      });
-
-      alert("Usuario creado");
-  }
 
 </script>
 
