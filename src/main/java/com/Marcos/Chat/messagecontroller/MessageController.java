@@ -21,7 +21,6 @@ public class MessageController {
         this.messageRepository = messageRepository;
     }
 
-    @MessageMapping("/send")
     @SendTo("/topic/messages")
     public ChatMessage sendMessage(
             ChatMessage chatMessage,
