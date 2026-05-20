@@ -36,7 +36,8 @@ public class MessageController {
                 chatMessage.getSender(),
                 chatMessage.getContent(),
                 time,
-                ip
+                ip,
+                chatMessage.getRoomId()
         );
 
         messageRepository.save(message);
@@ -44,7 +45,8 @@ public class MessageController {
         return new ChatMessage(
                 chatMessage.getSender(),
                 chatMessage.getContent(),
-                time
+                time,
+                chatMessage.getRoomId()
         );
-    }
+}
 }

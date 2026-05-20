@@ -39,4 +39,12 @@ public class ChatMessage {
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
+    }
 }
