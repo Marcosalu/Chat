@@ -1,36 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>QuickChat</title>
+    <title>Chat Rooms</title>
 
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="style.css">
 
-    <!-- WebSocket libs -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
 
 <body>
 
-<div class="chat-container">
+<div id="sidebar">
+    <h3>Salas</h3>
 
-    <div class="chat-header">
-        🚀 QuickChat
-    </div>
+    <div class="room" onclick="joinRoom('general')"># general</div>
+    <div class="room" onclick="joinRoom('gaming')"># gaming</div>
+    <div class="room" onclick="joinRoom('dev')"># dev</div>
+</div>
 
-    <ul id="messages" class="messages"></ul>
+<div id="chat">
 
-    <div class="input-area">
+    <ul id="messages"></ul>
 
-        <input type="text" id="sender" placeholder="Your name">
-
-        <input type="text" id="message" placeholder="Write a message">
-
-        <button onclick="sendMessage()">
-            Send
-        </button>
-
+    <div id="inputBox">
+        <input id="sender" placeholder="Nombre">
+        <input id="message" placeholder="Mensaje">
+        <button onclick="sendMessage()">Enviar</button>
     </div>
 
 </div>
@@ -38,66 +35,62 @@
 <script>
 
     let stompClient = null;
+    let currentRoom = "general";
 
-    // -----------------------------
-    // 1. LOAD HISTORY (REST)
-    // -----------------------------
-    async function loadMessages() {
-        const response = await fetch('/api/messages');
-        const messages = await response.json();
-
-        messages.forEach(msg => showMessage(msg));
-    }
-
-    window.onload = function () {
-        loadMessages();
-        connectWebSocket();
-    };
-
-    // -----------------------------
-    // 2. CONNECT WEBSOCKET
-    // -----------------------------
-    function connectWebSocket() {
+    function connect() {
 
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function () {
-
-            stompClient.subscribe('/topic/messages', function (messageOutput) {
-                const message = JSON.parse(messageOutput.body);
-                showMessage(message);
-            });
-
+            subscribeToRoom(currentRoom);
         });
     }
 
-    // -----------------------------
-    // 3. SEND MESSAGE
-    // -----------------------------
+    function joinRoom(room) {
+
+        currentRoom = room;
+
+        document.getElementById("messages").innerHTML = "";
+
+        subscribeToRoom(room);
+
+        loadMessages(room);
+    }
+
+    function subscribeToRoom(room) {
+
+        stompClient.subscribe("/topic/room/" + room, function (msg) {
+            const message = JSON.parse(msg.body);
+            showMessage(message);
+        });
+    }
+
+    async function loadMessages(room) {
+
+        const response = await fetch("/api/messages/" + room);
+        const messages = await response.json();
+
+        messages.forEach(m => showMessage(m));
+    }
+
     function sendMessage() {
 
         const sender = document.getElementById("sender").value;
         const content = document.getElementById("message").value;
 
-        if (!sender || !content) return;
-
-        stompClient.send("/app/send", {}, JSON.stringify({
+        stompClient.send("/app/chat/" + currentRoom, {}, JSON.stringify({
             sender: sender,
-            content: content
+            content: content,
+            roomId: currentRoom
         }));
-
-        document.getElementById("message").value = "";
     }
 
-    // -----------------------------
-    // 4. SHOW MESSAGE
-    // -----------------------------
     function showMessage(message) {
 
-        const messages = document.getElementById('messages');
+        const messages = document.getElementById("messages");
 
-        const li = document.createElement('li');
+        const li = document.createElement("li");
 
         li.innerHTML =
             "<strong>" + message.sender + "</strong> " +
@@ -108,6 +101,9 @@
 
         messages.scrollTop = messages.scrollHeight;
     }
+
+    connect();
+    loadMessages(currentRoom);
 
 </script>
 

@@ -13,15 +13,17 @@ public class Message {
     private String content;
     private String timestamp;
     private String ip;
+    private String roomId;
 
     public Message() {
     }
 
-    public Message(String sender, String content, String timestamp,String ip) {
+    public Message(String sender, String content, String timestamp, String ip, String roomId) {
         this.sender = sender;
         this.content = content;
         this.timestamp = timestamp;
         this.ip = ip;
+        this.roomId = roomId;
     }
 
     // GETTERS

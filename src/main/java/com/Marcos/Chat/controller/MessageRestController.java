@@ -17,9 +17,9 @@ public class MessageRestController {
         this.messageRepository = messageRepository;
     }
 
-    @GetMapping
-    public List<Message> getMessages() {
-        return messageRepository.findAll();
+    @GetMapping("/api/messages/{roomId}")
+    public List<Message> getMessages(@PathVariable String roomId) {
+        return messageRepository.findByRoomId(roomId);
     }
 
     @PostMapping

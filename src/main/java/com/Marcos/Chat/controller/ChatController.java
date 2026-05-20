@@ -8,6 +8,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -21,23 +22,25 @@ public class ChatController {
         this.messageRepository = messageRepository;
     }
 
-    @MessageMapping("/send")
-    @SendTo("/topic/messages")
-    public ChatMessage sendMessage(ChatMessage chatMessage,
-                                   SimpMessageHeaderAccessor headerAccessor) {
+    @MessageMapping("/chat/{roomId}")
+    @SendTo("/topic/room/{roomId}")
+    public ChatMessage sendMessage(
+            @DestinationVariable String roomId,
+            ChatMessage chatMessage,
+            SimpMessageHeaderAccessor headerAccessor
+    ) {
 
         String time = LocalTime.now()
                 .format(DateTimeFormatter.ofPattern("HH:mm"));
 
-        String ip = headerAccessor.getSessionAttributes() != null
-                ? (String) headerAccessor.getSessionAttributes().get("ip")
-                : "unknown";
+        String ip = (String) headerAccessor.getSessionAttributes().get("ip");
 
         Message message = new Message(
                 chatMessage.getSender(),
                 chatMessage.getContent(),
                 time,
-                ip
+                ip,
+                roomId
         );
 
         messageRepository.save(message);
@@ -45,7 +48,8 @@ public class ChatController {
         return new ChatMessage(
                 chatMessage.getSender(),
                 chatMessage.getContent(),
-                time
+                time,
+                roomId
         );
     }
 }

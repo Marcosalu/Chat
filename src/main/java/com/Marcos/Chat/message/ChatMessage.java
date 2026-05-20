@@ -5,13 +5,15 @@ public class ChatMessage {
     private String sender;
     private String content;
     private String timestamp;
+    private String roomId;
 
     public ChatMessage() {}
 
-    public ChatMessage(String sender, String content, String timestamp) {
+    public ChatMessage(String sender, String content, String timestamp, String roomId) {
         this.sender = sender;
         this.content = content;
         this.timestamp = timestamp;
+        this.roomId = roomId;
     }
 
     public String getSender() {
