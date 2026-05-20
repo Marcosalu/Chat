@@ -1,194 +1,96 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Chat Rooms</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-</head>
-
-<body>
-
-<!-- SIDEBAR -->
-<div id="sidebar">
-
-    <h2>Salas</h2>
-
-    <div class="room" onclick="joinRoom('general')">
-        # general
-    </div>
-
-    <div class="room" onclick="joinRoom('gaming')">
-        # gaming
-    </div>
-
-    <div class="room" onclick="joinRoom('dev')">
-        # dev
-    </div>
-
-</div>
-
-<!-- CHAT -->
-<div id="chat">
-
-    <!-- MENSAJES -->
-    <ul id="messages"></ul>
-
-    <!-- INPUT -->
-    <div id="inputBox">
-
-        <input
-                type="text"
-                id="sender"
-                placeholder="Tu nombre"
-        >
-
-        <input
-                type="text"
-                id="message"
-                placeholder="Escribe un mensaje..."
-        >
-
-        <button onclick="sendMessage()">
-            Enviar
-        </button>
-
-    </div>
-
-</div>
-
 <script>
 
     let stompClient = null;
-
     let currentRoom = "general";
-
     let currentSubscription = null;
 
-    // 🔌 CONECTAR WEBSOCKET
+    // 🔌 conectar websocket
     function connect() {
 
         const socket = new SockJS('/ws');
-
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function () {
-
-            console.log("Conectado al WebSocket");
-
             joinRoom(currentRoom);
-
         });
     }
 
-    // 🚪 CAMBIAR DE SALA
+    // 🚪 cambiar sala
     function joinRoom(room) {
 
         currentRoom = room;
 
-        // limpiar mensajes visuales
-        document.getElementById("messages").innerHTML = "";
-
-        // cancelar suscripción anterior
-        if (currentSubscription !== null) {
-
+        // ❌ cancelar suscripción anterior
+        if (currentSubscription) {
             currentSubscription.unsubscribe();
+            currentSubscription = null;
         }
 
-        // suscribirse SOLO a la sala actual
+        // 🧹 limpiar pantalla
+        document.getElementById("messages").innerHTML = "";
+
+        // 🟢 nueva suscripción
         currentSubscription = stompClient.subscribe(
             "/topic/room/" + room,
-
-            function (messageOutput) {
-
-                const message = JSON.parse(messageOutput.body);
-
-                showMessage(message);
+            function (msg) {
+                showMessage(JSON.parse(msg.body));
             }
         );
 
-        // cargar historial SOLO de esta sala
+        // 📥 cargar historial correcto
         loadMessages(room);
     }
 
-    // 📥 CARGAR HISTORIAL
+    // 📥 historial REST
     async function loadMessages(room) {
 
         const response = await fetch("/api/messages/" + room);
-
         const messages = await response.json();
 
-        // limpiar por seguridad
-        document.getElementById("messages").innerHTML = "";
+        const box = document.getElementById("messages");
 
-        messages.forEach(msg => {
+        box.innerHTML = "";
 
-            showMessage(msg);
-        });
+        messages.forEach(m => showMessage(m));
     }
 
-    // 📤 ENVIAR MENSAJE
+    // 📤 enviar mensaje
     function sendMessage() {
 
         const sender = document.getElementById("sender").value;
-
         const content = document.getElementById("message").value;
 
-        // evitar mensajes vacíos
-        if (content.trim() === "") {
-            return;
-        }
+        if (!content.trim()) return;
 
-        stompClient.send(
+        stompClient.send("/app/chat/" + currentRoom, {}, JSON.stringify({
+            sender,
+            content,
+            roomId: currentRoom
+        }));
 
-            "/app/chat/" + currentRoom,
-
-            {},
-
-            JSON.stringify({
-
-                sender: sender,
-                content: content,
-                roomId: currentRoom
-            })
-        );
-
-        // limpiar input
         document.getElementById("message").value = "";
     }
 
-    // 💬 MOSTRAR MENSAJE
+    // 💬 mostrar mensaje
     function showMessage(message) {
 
-        const messages = document.getElementById("messages");
+        const box = document.getElementById("messages");
 
         const li = document.createElement("li");
 
         li.innerHTML =
-
             "<strong>" + message.sender + "</strong> " +
-
-            "<span style='color:gray; font-size:12px;'>["
-
-            + message.timestamp +
-
+            "<span style='color:gray;font-size:12px;'>[" +
+            message.timestamp +
             "]</span><br>" +
-
             message.content;
 
-        messages.appendChild(li);
+        box.appendChild(li);
 
-        // scroll abajo automático
-        messages.scrollTop = messages.scrollHeight;
+        box.scrollTop = box.scrollHeight;
     }
 
-    // 🚀 INICIAR APP
+    // 🚀 iniciar
     connect();
 
 </script>
-
-</body>
-</html>
