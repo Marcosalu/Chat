@@ -1,12 +1,22 @@
-body {
+/* =========================
+   RESET GENERAL
+========================= */
+
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
     font-family: Arial, sans-serif;
     background: #36393f;
     color: white;
+    overflow: hidden; /* evita scroll global */
 }
 
 /* =========================
-   LOGIN
+   LOGIN / REGISTER
 ========================= */
 
 .login-container {
@@ -32,6 +42,7 @@ body {
     border-radius: 5px;
     background: #40444b;
     color: white;
+    outline: none;
 }
 
 .login-box button {
@@ -49,8 +60,24 @@ body {
     background: #4752c4;
 }
 
+.secondary {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid #5865f2;
+    color: #5865f2;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.secondary:hover {
+    background: #5865f2;
+    color: white;
+}
+
 /* =========================
-   CHAT LAYOUT
+   LAYOUT CHAT
 ========================= */
 
 #sidebar {
@@ -61,11 +88,13 @@ body {
     flex-direction: column;
     height: 100vh;
     float: left;
+    overflow: hidden;
 }
 
 #sidebar h2 {
     font-size: 14px;
     color: #b9bbbe;
+    margin-bottom: 10px;
 }
 
 .room {
@@ -75,6 +104,7 @@ body {
     cursor: pointer;
     color: #b9bbbe;
     transition: 0.2s;
+    user-select: none;
 }
 
 .room:hover {
@@ -88,6 +118,10 @@ body {
     color: white;
 }
 
+/* =========================
+   CHAT PANEL
+========================= */
+
 #chat {
     margin-left: 260px;
     display: flex;
@@ -99,13 +133,19 @@ body {
     padding: 10px;
     background: #2f3136;
     color: #b9bbbe;
+    flex-shrink: 0;
 }
+
+/* =========================
+   MENSAJES
+========================= */
 
 #messages {
     flex: 1;
     list-style: none;
     padding: 20px;
     overflow-y: auto;
+    min-height: 0; /* FIX FLEX SCROLL */
 }
 
 #messages li {
@@ -114,12 +154,18 @@ body {
     padding: 10px;
     border-radius: 8px;
     max-width: 60%;
+    word-wrap: break-word;
 }
+
+/* =========================
+   INPUT
+========================= */
 
 #inputBox {
     display: flex;
     padding: 15px;
     background: #40444b;
+    flex-shrink: 0;
 }
 
 #inputBox input {
@@ -129,6 +175,7 @@ body {
     border-radius: 5px;
     background: #2f3136;
     color: white;
+    outline: none;
 }
 
 #inputBox button {
@@ -144,18 +191,24 @@ body {
 #inputBox button:hover {
     background: #4752c4;
 }
-.secondary {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    background: transparent;
-    border: 1px solid #5865f2;
-    color: #5865f2;
-    cursor: pointer;
-    border-radius: 5px;
+
+/* =========================
+   SCROLLBAR (DISCORD STYLE)
+========================= */
+
+::-webkit-scrollbar {
+    width: 10px;
 }
 
-.secondary:hover {
-    background: #5865f2;
-    color: white;
+::-webkit-scrollbar-track {
+    background: #2b2d31;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1e1f22;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3f4147;
 }
