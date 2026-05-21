@@ -16,45 +16,28 @@
 
     <h2>💬 SALAS</h2>
 
-    <div class="room active" onclick="joinRoom('general')">
-        # general
-    </div>
-
-    <div class="room" onclick="joinRoom('gaming')">
-        # gaming
-    </div>
-
-    <div class="room" onclick="joinRoom('dev')">
-        # dev
-    </div>
+    <div class="room" onclick="joinRoom('general')"># general</div>
+    <div class="room" onclick="joinRoom('gaming')"># gaming</div>
+    <div class="room" onclick="joinRoom('dev')"># dev</div>
 
 </div>
 
 <div id="chat">
 
     <div id="topbar">
-        Usuario:
-        <span id="user"></span>
-
-        |
-
-        Sala:
-        <span id="currentRoom">general</span>
+        Usuario: <span id="user"></span> |
+        Sala: <span id="currentRoom">general</span>
     </div>
 
     <ul id="messages"></ul>
 
+    <!-- TYPING INDICATOR -->
+    <div id="typing"></div>
+
     <div id="inputBox">
 
-        <input
-                type="text"
-                id="message"
-                placeholder="Escribe un mensaje..."
-        >
-
-        <button onclick="sendMessage()">
-            Enviar
-        </button>
+        <input type="text" id="message" placeholder="Escribe un mensaje...">
+        <button onclick="sendMessage()">Enviar</button>
 
     </div>
 
@@ -62,150 +45,84 @@
 
 <script>
 
-    // =========================
-    // VARIABLES
-    // =========================
-
     let stompClient = null;
-
     let currentRoom = "general";
-
     let currentSubscription = null;
+    let typingSubscription = null;
 
-    // =========================
-    // USER
-    // =========================
-
-    let userEmail = localStorage.getItem("userEmail");
-
-    if (!userEmail) {
-
-        userEmail = prompt("Introduce tu nombre");
-
-        if (!userEmail || userEmail.trim() === "") {
-            userEmail = "Invitado";
-        }
-
-        localStorage.setItem("userEmail", userEmail);
-    }
-
+    const userEmail = localStorage.getItem("userEmail") || "Invitado";
     document.getElementById("user").innerText = userEmail;
 
     // =========================
     // CONNECT
     // =========================
-
     function connect() {
 
         const socket = new SockJS('/ws');
-
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function () {
-
             joinRoom(currentRoom);
-
         });
-    }
-
-    // =========================
-    // ACTIVE ROOM UI
-    // =========================
-
-    function updateActiveRoom(room) {
-
-        const rooms = document.querySelectorAll(".room");
-
-        rooms.forEach(r => r.classList.remove("active"));
-
-        const active = [...rooms].find(r =>
-            r.textContent.includes(room)
-        );
-
-        if (active) {
-            active.classList.add("active");
-        }
-    }
-
-    // =========================
-    // LOAD HISTORY
-    // =========================
-
-    async function loadHistory(room) {
-
-        try {
-
-            const response = await fetch("/api/messages/" + room);
-
-            const messages = await response.json();
-
-            const box = document.getElementById("messages");
-
-            box.innerHTML = "";
-
-            messages.forEach(message => {
-
-                showMessage(message);
-
-            });
-
-        } catch (error) {
-
-            console.error("Error cargando historial:", error);
-
-        }
     }
 
     // =========================
     // JOIN ROOM
     // =========================
-
     async function joinRoom(room) {
 
         currentRoom = room;
-
         document.getElementById("currentRoom").innerText = room;
 
-        updateActiveRoom(room);
+        if (currentSubscription) currentSubscription.unsubscribe();
+        if (typingSubscription) typingSubscription.unsubscribe();
 
-        // cancelar suscripción anterior
-        if (currentSubscription) {
-            currentSubscription.unsubscribe();
-        }
+        document.getElementById("messages").innerHTML = "";
 
-        // cargar historial
         await loadHistory(room);
 
-        // websocket de la sala
+        // MENSAJES
         currentSubscription = stompClient.subscribe(
             "/topic/" + room,
             function (msg) {
+                showMessage(JSON.parse(msg.body));
+            }
+        );
 
-                const message = JSON.parse(msg.body);
-
-                showMessage(message);
+        // TYPING
+        typingSubscription = stompClient.subscribe(
+            "/topic/" + room + "/typing",
+            function (msg) {
+                document.getElementById("typing").innerText = msg.body;
             }
         );
     }
 
     // =========================
+    // HISTORIAL
+    // =========================
+    async function loadHistory(room) {
+
+        const res = await fetch("/api/messages/" + room);
+        const messages = await res.json();
+
+        messages.forEach(showMessage);
+    }
+
+    // =========================
     // SEND MESSAGE
     // =========================
-
     function sendMessage() {
 
         const input = document.getElementById("message");
-
         const content = input.value.trim();
 
-        if (content === "") return;
+        if (!content) return;
 
         stompClient.send("/app/send", {}, JSON.stringify({
-
             sender: userEmail,
             content: content,
             roomId: currentRoom
-
         }));
 
         input.value = "";
@@ -214,7 +131,6 @@
     // =========================
     // SHOW MESSAGE
     // =========================
-
     function showMessage(message) {
 
         const box = document.getElementById("messages");
@@ -231,26 +147,8 @@
     }
 
     // =========================
-    // ENTER TO SEND
-    // =========================
-
-    document.addEventListener("DOMContentLoaded", () => {
-
-        document.getElementById("message")
-            .addEventListener("keypress", function(e) {
-
-                if (e.key === "Enter") {
-                    sendMessage();
-                }
-
-            });
-
-    });
-
-    // =========================
     // START
     // =========================
-
     connect();
 
 </script>
