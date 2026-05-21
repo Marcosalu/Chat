@@ -1,0 +1,161 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #36393f;
+    color: white;
+}
+
+/* =========================
+   LOGIN
+========================= */
+
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    background: #2f3136;
+    padding: 30px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+}
+
+.login-box input {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #40444b;
+    color: white;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #5865f2;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.login-box button:hover {
+    background: #4752c4;
+}
+
+/* =========================
+   CHAT LAYOUT
+========================= */
+
+#sidebar {
+    width: 260px;
+    background: #2f3136;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    float: left;
+}
+
+#sidebar h2 {
+    font-size: 14px;
+    color: #b9bbbe;
+}
+
+.room {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #b9bbbe;
+    transition: 0.2s;
+}
+
+.room:hover {
+    background: #40444b;
+    color: white;
+}
+
+.room.active {
+    background: #3b3f45;
+    border-left: 3px solid #5865f2;
+    color: white;
+}
+
+#chat {
+    margin-left: 260px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+#topbar {
+    padding: 10px;
+    background: #2f3136;
+    color: #b9bbbe;
+}
+
+#messages {
+    flex: 1;
+    list-style: none;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+#messages li {
+    background: #40444b;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 60%;
+}
+
+#inputBox {
+    display: flex;
+    padding: 15px;
+    background: #40444b;
+}
+
+#inputBox input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #2f3136;
+    color: white;
+}
+
+#inputBox button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    background: #5865f2;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#inputBox button:hover {
+    background: #4752c4;
+}
+.secondary {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid #5865f2;
+    color: #5865f2;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.secondary:hover {
+    background: #5865f2;
+    color: white;
+}
