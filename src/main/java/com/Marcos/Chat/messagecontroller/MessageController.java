@@ -15,23 +15,24 @@ import java.time.format.DateTimeFormatter;
 public class MessageController {
 
     private final MessageRepository messageRepository;
+
     private final SimpMessagingTemplate messagingTemplate;
 
-    public MessageController(MessageRepository messageRepository,
-                             SimpMessagingTemplate messagingTemplate) {
+    public MessageController(
+            MessageRepository messageRepository,
+            SimpMessagingTemplate messagingTemplate
+    ) {
         this.messageRepository = messageRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
-    // =========================
-    // MENSAJES
-    // =========================
     @MessageMapping("/send")
     public void sendMessage(ChatMessage chatMessage) {
 
         String time = LocalTime.now()
                 .format(DateTimeFormatter.ofPattern("HH:mm"));
 
+        // guardar en BD
         Message message = new Message(
                 chatMessage.getSender(),
                 chatMessage.getContent(),
@@ -42,33 +43,10 @@ public class MessageController {
 
         messageRepository.save(message);
 
+        // enviar SOLO a esa sala
         messagingTemplate.convertAndSend(
                 "/topic/" + chatMessage.getRoomId(),
                 chatMessage
-        );
-    }
-
-    // =========================
-    // TYPING START
-    // =========================
-    @MessageMapping("/typing")
-    public void typing(ChatMessage msg) {
-
-        messagingTemplate.convertAndSend(
-                "/topic/" + msg.getRoomId() + "/typing",
-                msg.getSender() + " está escribiendo..."
-        );
-    }
-
-    // =========================
-    // TYPING STOP
-    // =========================
-    @MessageMapping("/stopped-typing")
-    public void stoppedTyping(ChatMessage msg) {
-
-        messagingTemplate.convertAndSend(
-                "/topic/" + msg.getRoomId() + "/typing",
-                ""
         );
     }
 }
