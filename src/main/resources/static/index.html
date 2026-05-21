@@ -35,9 +35,7 @@
     <div id="topbar">
         Usuario:
         <span id="user"></span>
-
         |
-
         Sala:
         <span id="currentRoom">general</span>
     </div>
@@ -46,11 +44,7 @@
 
     <div id="inputBox">
 
-        <input
-                type="text"
-                id="message"
-                placeholder="Escribe un mensaje..."
-        >
+        <input type="text" id="message" placeholder="Escribe un mensaje...">
 
         <button onclick="sendMessage()">
             Enviar
@@ -67,26 +61,17 @@
     // =========================
 
     let stompClient = null;
-
     let currentRoom = "general";
-
     let currentSubscription = null;
 
     // =========================
-    // USER
+    // USER CHECK (OPCIÓN 1 FIX)
     // =========================
 
     let userEmail = localStorage.getItem("userEmail");
 
     if (!userEmail) {
-
-        userEmail = prompt("Introduce tu nombre");
-
-        if (!userEmail || userEmail.trim() === "") {
-            userEmail = "Invitado";
-        }
-
-        localStorage.setItem("userEmail", userEmail);
+        window.location.href = "/register.html";
     }
 
     document.getElementById("user").innerText = userEmail;
@@ -98,13 +83,10 @@
     function connect() {
 
         const socket = new SockJS('/ws');
-
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function () {
-
             joinRoom(currentRoom);
-
         });
     }
 
@@ -136,23 +118,15 @@
         try {
 
             const response = await fetch("/api/messages/" + room);
-
             const messages = await response.json();
 
             const box = document.getElementById("messages");
-
             box.innerHTML = "";
 
-            messages.forEach(message => {
-
-                showMessage(message);
-
-            });
+            messages.forEach(showMessage);
 
         } catch (error) {
-
             console.error("Error cargando historial:", error);
-
         }
     }
 
@@ -168,21 +142,17 @@
 
         updateActiveRoom(room);
 
-        // cancelar suscripción anterior
         if (currentSubscription) {
             currentSubscription.unsubscribe();
         }
 
-        // cargar historial
         await loadHistory(room);
 
-        // websocket de la sala
         currentSubscription = stompClient.subscribe(
             "/topic/" + room,
             function (msg) {
 
                 const message = JSON.parse(msg.body);
-
                 showMessage(message);
             }
         );
@@ -195,10 +165,9 @@
     function sendMessage() {
 
         const input = document.getElementById("message");
-
         const content = input.value.trim();
 
-        if (content === "") return;
+        if (!content) return;
 
         stompClient.send("/app/send", {}, JSON.stringify({
 
@@ -231,7 +200,7 @@
     }
 
     // =========================
-    // ENTER TO SEND
+    // ENTER SEND
     // =========================
 
     document.addEventListener("DOMContentLoaded", () => {
