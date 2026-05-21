@@ -16,25 +16,45 @@
 
     <h2>💬 SALAS</h2>
 
-    <div class="room" onclick="joinRoom('general')"># general</div>
-    <div class="room" onclick="joinRoom('gaming')"># gaming</div>
-    <div class="room" onclick="joinRoom('dev')"># dev</div>
+    <div class="room active" onclick="joinRoom('general')">
+        # general
+    </div>
+
+    <div class="room" onclick="joinRoom('gaming')">
+        # gaming
+    </div>
+
+    <div class="room" onclick="joinRoom('dev')">
+        # dev
+    </div>
 
 </div>
 
 <div id="chat">
 
     <div id="topbar">
-        Usuario: <span id="user"></span> |
-        Sala: <span id="currentRoom">general</span>
+        Usuario:
+        <span id="user"></span>
+
+        |
+
+        Sala:
+        <span id="currentRoom">general</span>
     </div>
 
     <ul id="messages"></ul>
 
     <div id="inputBox">
 
-        <input type="text" id="message" placeholder="Escribe un mensaje...">
-        <button onclick="sendMessage()">Enviar</button>
+        <input
+                type="text"
+                id="message"
+                placeholder="Escribe un mensaje..."
+        >
+
+        <button onclick="sendMessage()">
+            Enviar
+        </button>
 
     </div>
 
@@ -42,28 +62,56 @@
 
 <script>
 
+    // =========================
+    // VARIABLES
+    // =========================
+
     let stompClient = null;
+
     let currentRoom = "general";
+
     let currentSubscription = null;
 
-    const userEmail = localStorage.getItem("userEmail");
+    // =========================
+    // USER
+    // =========================
 
-if (!userEmail) {
-    window.location.href = "/register.html";
-}
+    let userEmail = localStorage.getItem("userEmail");
 
+    if (!userEmail) {
+
+        userEmail = prompt("Introduce tu nombre");
+
+        if (!userEmail || userEmail.trim() === "") {
+            userEmail = "Invitado";
+        }
+
+        localStorage.setItem("userEmail", userEmail);
+    }
+
+    document.getElementById("user").innerText = userEmail;
+
+    // =========================
     // CONNECT
+    // =========================
+
     function connect() {
 
         const socket = new SockJS('/ws');
+
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function () {
+
             joinRoom(currentRoom);
+
         });
     }
 
+    // =========================
     // ACTIVE ROOM UI
+    // =========================
+
     function updateActiveRoom(room) {
 
         const rooms = document.querySelectorAll(".room");
@@ -74,11 +122,45 @@ if (!userEmail) {
             r.textContent.includes(room)
         );
 
-        if (active) active.classList.add("active");
+        if (active) {
+            active.classList.add("active");
+        }
     }
 
+    // =========================
+    // LOAD HISTORY
+    // =========================
+
+    async function loadHistory(room) {
+
+        try {
+
+            const response = await fetch("/api/messages/" + room);
+
+            const messages = await response.json();
+
+            const box = document.getElementById("messages");
+
+            box.innerHTML = "";
+
+            messages.forEach(message => {
+
+                showMessage(message);
+
+            });
+
+        } catch (error) {
+
+            console.error("Error cargando historial:", error);
+
+        }
+    }
+
+    // =========================
     // JOIN ROOM
-    function joinRoom(room) {
+    // =========================
+
+    async function joinRoom(room) {
 
         currentRoom = room;
 
@@ -86,37 +168,53 @@ if (!userEmail) {
 
         updateActiveRoom(room);
 
+        // cancelar suscripción anterior
         if (currentSubscription) {
             currentSubscription.unsubscribe();
         }
 
-        document.getElementById("messages").innerHTML = "";
+        // cargar historial
+        await loadHistory(room);
 
+        // websocket de la sala
         currentSubscription = stompClient.subscribe(
-            "/topic/messages",
+            "/topic/" + room,
             function (msg) {
-                showMessage(JSON.parse(msg.body));
+
+                const message = JSON.parse(msg.body);
+
+                showMessage(message);
             }
         );
     }
 
-    // SEND
+    // =========================
+    // SEND MESSAGE
+    // =========================
+
     function sendMessage() {
 
-        const content = document.getElementById("message").value;
+        const input = document.getElementById("message");
 
-        if (!content.trim()) return;
+        const content = input.value.trim();
+
+        if (content === "") return;
 
         stompClient.send("/app/send", {}, JSON.stringify({
+
             sender: userEmail,
             content: content,
             roomId: currentRoom
+
         }));
 
-        document.getElementById("message").value = "";
+        input.value = "";
     }
 
-    // SHOW
+    // =========================
+    // SHOW MESSAGE
+    // =========================
+
     function showMessage(message) {
 
         const box = document.getElementById("messages");
@@ -131,6 +229,27 @@ if (!userEmail) {
 
         box.scrollTop = box.scrollHeight;
     }
+
+    // =========================
+    // ENTER TO SEND
+    // =========================
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        document.getElementById("message")
+            .addEventListener("keypress", function(e) {
+
+                if (e.key === "Enter") {
+                    sendMessage();
+                }
+
+            });
+
+    });
+
+    // =========================
+    // START
+    // =========================
 
     connect();
 

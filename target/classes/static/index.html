@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Rooms</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+
+<body>
+
+<div id="sidebar">
+
+    <h2>💬 SALAS</h2>
+
+    <div class="room" onclick="joinRoom('general')"># general</div>
+    <div class="room" onclick="joinRoom('gaming')"># gaming</div>
+    <div class="room" onclick="joinRoom('dev')"># dev</div>
+
+</div>
+
+<div id="chat">
+
+    <div id="topbar">
+        Usuario: <span id="user"></span> |
+        Sala: <span id="currentRoom">general</span>
+    </div>
+
+    <ul id="messages"></ul>
+
+    <div id="inputBox">
+
+        <input type="text" id="message" placeholder="Escribe un mensaje...">
+        <button onclick="sendMessage()">Enviar</button>
+
+    </div>
+
+</div>
+
+<script>
+
+    let stompClient = null;
+    let currentRoom = "general";
+    let currentSubscription = null;
+
+    const userEmail = localStorage.getItem("userEmail");
+
+    document.getElementById("user").innerText = userEmail;
+
+    // CONNECT
+    function connect() {
+
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function () {
+            joinRoom(currentRoom);
+        });
+    }
+
+    // ACTIVE ROOM UI
+    function updateActiveRoom(room) {
+
+        const rooms = document.querySelectorAll(".room");
+
+        rooms.forEach(r => r.classList.remove("active"));
+
+        const active = [...rooms].find(r =>
+            r.textContent.includes(room)
+        );
+
+        if (active) active.classList.add("active");
+    }
+
+    // JOIN ROOM
+    function joinRoom(room) {
+
+        currentRoom = room;
+
+        document.getElementById("currentRoom").innerText = room;
+
+        updateActiveRoom(room);
+
+        if (currentSubscription) {
+            currentSubscription.unsubscribe();
+        }
+
+        document.getElementById("messages").innerHTML = "";
+
+        currentSubscription = stompClient.subscribe(
+            "/topic/messages",
+            function (msg) {
+                showMessage(JSON.parse(msg.body));
+            }
+        );
+    }
+
+    // SEND
+    function sendMessage() {
+
+        const content = document.getElementById("message").value;
+
+        if (!content.trim()) return;
+
+        stompClient.send("/app/send", {}, JSON.stringify({
+            sender: userEmail,
+            content: content,
+            roomId: currentRoom
+        }));
+
+        document.getElementById("message").value = "";
+    }
+
+    // SHOW
+    function showMessage(message) {
+
+        const box = document.getElementById("messages");
+
+        const li = document.createElement("li");
+
+        li.innerHTML =
+            "<strong>" + message.sender + "</strong><br>" +
+            message.content;
+
+        box.appendChild(li);
+
+        box.scrollTop = box.scrollHeight;
+    }
+
+    connect();
+
+</script>
+
+</body>
+</html>

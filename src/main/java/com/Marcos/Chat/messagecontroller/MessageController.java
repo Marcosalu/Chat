@@ -5,7 +5,7 @@ import com.Marcos.Chat.message.ChatMessage;
 import com.Marcos.Chat.repository.MessageRepository;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalTime;
@@ -16,31 +16,37 @@ public class MessageController {
 
     private final MessageRepository messageRepository;
 
-    public MessageController(MessageRepository messageRepository) {
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public MessageController(
+            MessageRepository messageRepository,
+            SimpMessagingTemplate messagingTemplate
+    ) {
         this.messageRepository = messageRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @MessageMapping("/send")
-    @SendTo("/topic/messages")
-    public ChatMessage sendMessage(ChatMessage chatMessage) {
+    public void sendMessage(ChatMessage chatMessage) {
 
         String time = LocalTime.now()
                 .format(DateTimeFormatter.ofPattern("HH:mm"));
 
+        // guardar en BD
         Message message = new Message(
                 chatMessage.getSender(),
                 chatMessage.getContent(),
                 time,
                 chatMessage.getRoomId(),
-                "unknown" // o IP real luego
+                "unknown"
         );
 
         messageRepository.save(message);
 
-        return new ChatMessage(
-                chatMessage.getSender(),
-                chatMessage.getContent(),
-                chatMessage.getRoomId()
+        // enviar SOLO a esa sala
+        messagingTemplate.convertAndSend(
+                "/topic/" + chatMessage.getRoomId(),
+                chatMessage
         );
     }
 }
